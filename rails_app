@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# rails_app  Startup script for rails_app (a rails app)
+#
+# chkconfig: - 85 15
+# description: rails_app -- a rails app
+
+. /etc/rc.d/init.d/functions
+
+PROG_NAME=rails_app
+USER=deploy_user
+APP_ROOT=/path/to/app_root
+RAILS_ENV=production
+PID_FILE=$APP_ROOT/tmp/pids/unicorn.pid
+CONFIG_FILE=$APP_ROOT/config/unicorn.rb
+CMD="/usr/local/rbenv/shims/bundle exec unicorn_rails"
+ARGS="-c $CONFIG_FILE -D -E $RAILS_ENV"
+
+export PATH=/usr/local/rbenv/bin:$PATH
+
+cd $APP_ROOT || exit 1
+
+case $1 in
+
+  start)
+    daemon --user=$USER --pidfile=$PID_FILE $CMD $ARGS
+    ;;
+  stop)
+    killproc -p $PID_FILE $PROG_NAME -QUIT
+    ;;
+  restart)
+    killproc -p $PID_FILE $PROG_NAME -USR2
+    ;;
+  *)
+    echo >&2 "Usage: $0 <start|stop|restart>"
+    exit 1
+    ;;
+esac
